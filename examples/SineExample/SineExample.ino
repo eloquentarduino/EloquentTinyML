@@ -1,8 +1,14 @@
 #include <EloquentTinyML.h>
 #include "sine_model.h"
 
+#define NUMBER_OF_INPUTS 1
+#define NUMBER_OF_OUTPUTS 1
+#define TENSOR_ARENA_SIZE 2*1024
 
-Eloquent::TinyML::TinyML<1, 1, 2048> ml(sine_model_quantized_tflite);
+Eloquent::TinyML::TinyML<
+        NUMBER_OF_INPUTS,
+        NUMBER_OF_OUTPUTS,
+        TENSOR_ARENA_SIZE> ml(sine_model_quantized_tflite);
 
 
 void setup() {
@@ -10,9 +16,16 @@ void setup() {
 }
 
 void loop() {
-    float input[1] = {random(10) > 5 ? 3.14/2 : 0};
-    float output = ml.predict(input);
+    float x = 3.14 * random(100) / 100;
+    float y = sin(x);
+    float input[1] = { x };
+    float predicted = ml.predict(input);
 
-    Serial.println(output);
+    Serial.print("sin(");
+    Serial.print(x);
+    Serial.print(") = ");
+    Serial.print(y);
+    Serial.print("\t predicted: ");
+    Serial.println(predicted);
     delay(1000);
 }
