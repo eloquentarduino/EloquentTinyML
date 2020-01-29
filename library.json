@@ -1,0 +1,16 @@
+{
+  "name": "EloquentTinyML",
+  "keywords": "tinyml",
+  "description": "Eloquent interface to Tensorflow Lite for Microcontrollers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eloquentarduino/EloquentTinyML"
+  },
+  "version": "0.0.1",
+  "authors": {
+    "name": "Simone Salerno",
+    "url": "https://github.com/eloquentarduino"
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}
