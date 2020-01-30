@@ -19,13 +19,13 @@ namespace Eloquent {
          * @tparam tensorArenaSize how much memory to allocate to the tensors
          */
         template<size_t inputSize, size_t outputSize, size_t tensorArenaSize>
-        class TinyML {
+        class TfLite {
         public:
             /**
              * Contructor
              * @param modelData a model as exported by tinymlgen
              */
-            TinyML(unsigned char *modelData) {
+            TfLite(unsigned char *modelData) {
                 static tflite::MicroErrorReporter microReporter;
                 static tflite::ops::micro::AllOpsResolver resolver;
 
