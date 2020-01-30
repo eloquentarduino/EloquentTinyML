@@ -7,10 +7,7 @@
 // in future projects you may need to tweek this value: it's a trial and error process
 #define TENSOR_ARENA_SIZE 2*1024
 
-Eloquent::TinyML::TinyML<
-        NUMBER_OF_INPUTS,
-        NUMBER_OF_OUTPUTS,
-        TENSOR_ARENA_SIZE> ml(sine_model);
+Eloquent::TinyML::TinyML<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> ml(sine_model);
 
 
 void setup() {

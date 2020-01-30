@@ -20,6 +20,13 @@ limitations under the License.
 
 #include "tensorflow/lite/c/builtin_op_data.h"
 
+#ifndef _max
+#define _max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+#ifndef _min
+#define _min(a, b) ((a) > (b) ? (b) : (a))
+#endif
+
 namespace tflite {
 namespace ops {
 namespace micro {
@@ -30,17 +37,18 @@ inline float ActivationValFloat(TfLiteFusedActivation act, float a) {
     case kTfLiteActNone:
       return a;
     case kTfLiteActRelu:
-      return std::fmax(0.0f, a);
+      return _max(0.0f, a);
     case kTfLiteActRelu1:
-      return std::fmax(-1.0f, std::fmin(a, 1.0f));
+      return _max(-1.0f, _min(a, 1.0f));
     case kTfLiteActRelu6:
-      return std::fmax(0.0f, std::fmin(a, 6.0f));
+      return _max(0.0f, _min(a, 6.0f));
     case kTfLiteActTanh:
-      return std::tanh(a);
+      return tanh(a);
     case kTfLiteActSignBit:
-      return std::signbit(a);
+      //return signbit(a);
+	  return a > 0 ? 1 : 0;
     case kTfLiteActSigmoid:
-      return 1.0f / (1.0f + std::exp(-a));
+      return 1.0f / (1.0f + exp(-a));
   }
 }
 
