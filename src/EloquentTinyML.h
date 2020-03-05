@@ -85,7 +85,7 @@ namespace Eloquent {
                 // copy output
                 if (output != NULL) {
                     for (size_t i = 0; i < outputSize; i++)
-                        output[i] = this->output->data.f[0];
+                        output[i] = this->output->data.f[i];
                 }
 
                 return this->output->data.f[0];
