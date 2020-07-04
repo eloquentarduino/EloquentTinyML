@@ -25,7 +25,11 @@ namespace Eloquent {
              * Contructor
              * @param modelData a model as exported by tinymlgen
              */
-            TfLite(unsigned char *modelData) {
+            TfLite() :
+                failed(false) {
+            }
+
+            bool begin(const unsigned char *modelData) {
                 static tflite::MicroErrorReporter microReporter;
                 static tflite::ops::micro::AllOpsResolver resolver;
 
@@ -34,26 +38,32 @@ namespace Eloquent {
 
                 // assert model version and runtime version match
                 if (model->version() != TFLITE_SCHEMA_VERSION) {
-                  failed = true;
-                  reporter->Report(
-                      "Model provided is schema version %d not equal "
-                      "to supported version %d.",
-                      model->version(), TFLITE_SCHEMA_VERSION);
+                    failed = true;
+                    Serial.println("Version mismatch");
+                    reporter->Report(
+                            "Model provided is schema version %d not equal "
+                            "to supported version %d.",
+                            model->version(), TFLITE_SCHEMA_VERSION);
 
-                  return;
+                    return false;
                 }
 
                 static tflite::MicroInterpreter interpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
 
                 if (interpreter.AllocateTensors() != kTfLiteOk) {
                     failed = true;
+                    Serial.println("Allocation failed");
                     reporter->Report("AllocateTensors() failed");
-                    return;
+
+                    return false;
                 }
 
                 input = interpreter.input(0);
                 output = interpreter.output(0);
+
                 this->interpreter = &interpreter;
+
+                return true;
             }
 
             /**
@@ -63,13 +73,33 @@ namespace Eloquent {
                 return !failed;
             }
 
+            uint8_t predict(uint8_t *input, uint8_t *output = NULL) {
+                // abort if initialization failed
+                if (!initialized())
+                    return sqrt(-1);
+
+                memcpy(input, this->input->data.uint8, sizeof(uint8_t) * inputSize);
+
+                if (interpreter->Invoke() != kTfLiteOk) {
+                    reporter->Report("Inference failed");
+
+                    return sqrt(-1);
+                }
+
+                // copy output
+                if (output != NULL)
+                    memcpy(output, this->output->data.uint8, sizeof(uint8_t) * outputSize);
+
+                return this->output->data.uint8[0];
+            }
+
             /**
              * Run inference
              * @return output[0], so you can use it directly if it's the only output
              */
             float predict(float *input, float *output = NULL) {
                 // abort if initialization failed
-                if (failed)
+                if (!initialized())
                     return sqrt(-1);
 
                 // copy input
@@ -84,8 +114,7 @@ namespace Eloquent {
 
                 // copy output
                 if (output != NULL) {
-                    for (size_t i = 0; i < outputSize; i++)
-                        output[i] = this->output->data.f[i];
+                    memcpy(output, this->output->data.f, sizeof(float) * outputSize);
                 }
 
                 return this->output->data.f[0];

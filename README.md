@@ -28,11 +28,12 @@ git clone https://github.com/eloquentarduino/EloquentTinyML.git
 Eloquent::TinyML::TinyML<
     NUMBER_OF_INPUTS,
     NUMBER_OF_OUTPUTS,
-    TENSOR_ARENA_SIZE> ml(sine_model_quantized_tflite);
+    TENSOR_ARENA_SIZE> ml;
 
 
 void setup() {
     Serial.begin(115200);
+    ml.begin(sine_model_quantized_tflite);
 }
 
 void loop() {

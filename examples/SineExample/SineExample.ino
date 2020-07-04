@@ -7,11 +7,12 @@
 // in future projects you may need to tweek this value: it's a trial and error process
 #define TENSOR_ARENA_SIZE 2*1024
 
-Eloquent::TinyML::TfLite<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> ml(sine_model);
+Eloquent::TinyML::TfLite<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> ml;
 
 
 void setup() {
     Serial.begin(115200);
+    ml.begin(sine_model);
 }
 
 void loop() {
