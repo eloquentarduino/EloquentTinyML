@@ -29,12 +29,22 @@ namespace Eloquent {
                 failed(false) {
             }
 
+            /**
+             * Inizialize NN
+             *
+             * @param modelData
+             * @return
+             */
             bool begin(const unsigned char *modelData) {
                 static tflite::MicroErrorReporter microReporter;
                 static tflite::ops::micro::AllOpsResolver resolver;
 
+                Serial.println("Start");
+
                 reporter = &microReporter;
                 model = tflite::GetModel(modelData);
+
+                Serial.println("GetModel done");
 
                 // assert model version and runtime version match
                 if (model->version() != TFLITE_SCHEMA_VERSION) {
@@ -48,6 +58,8 @@ namespace Eloquent {
                     return false;
                 }
 
+                Serial.println("Version check done");
+
                 static tflite::MicroInterpreter interpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
 
                 if (interpreter.AllocateTensors() != kTfLiteOk) {
@@ -58,10 +70,14 @@ namespace Eloquent {
                     return false;
                 }
 
+                Serial.println("AllocateTensors done");
+
                 input = interpreter.input(0);
                 output = interpreter.output(0);
 
                 this->interpreter = &interpreter;
+
+                Serial.println("Begin done");
 
                 return true;
             }
@@ -87,8 +103,10 @@ namespace Eloquent {
                 }
 
                 // copy output
-                if (output != NULL)
-                    memcpy(output, this->output->data.uint8, sizeof(uint8_t) * outputSize);
+                if (output != NULL) {
+                    for (uint16_t i = 0; i < outputSize; i++)
+                        output[i] = this->output->data.uint8[i];
+                }
 
                 return this->output->data.uint8[0];
             }
@@ -114,7 +132,10 @@ namespace Eloquent {
 
                 // copy output
                 if (output != NULL) {
-                    memcpy(output, this->output->data.f, sizeof(float) * outputSize);
+                    if (output != NULL) {
+                        for (uint16_t i = 0; i < outputSize; i++)
+                            output[i] = this->output->data.f[i];
+                    }
                 }
 
                 return this->output->data.f[0];
