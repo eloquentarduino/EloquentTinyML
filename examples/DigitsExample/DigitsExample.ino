@@ -28,8 +28,11 @@ void loop() {
     int y_test = 8;
 
     uint32_t start = micros();
+
     ml.predict(x_test, y_pred);
+
     uint32_t timeit = micros() - start;
+
     Serial.print("It took ");
     Serial.print(timeit);
     Serial.println(" micros to run inference");
@@ -43,18 +46,10 @@ void loop() {
         Serial.print(i == 9 ? '\n' : ',');
     }
 
-    uint8_t pred_class = 0;
-    float max_proba = y_pred[0];
-
-    for (int i = 1; i < 10; i++) {
-        if (y_pred[i] > max_proba) {
-            pred_class = i;
-            max_proba = y_pred[i];
-        }
-    }
-
-    Serial.print("Predicted output is: ");
-    Serial.println(pred_class);
+    Serial.print("Predicted class is: ");
+    Serial.println(ml.probaToClass(y_pred));
+    Serial.print("Sanity check: ");
+    Serial.println(ml.predictClass(x_test));
 
     delay(1000);
 }

@@ -89,6 +89,12 @@ namespace Eloquent {
                 return !failed;
             }
 
+            /**
+             *
+             * @param input
+             * @param output
+             * @return
+             */
             uint8_t predict(uint8_t *input, uint8_t *output = NULL) {
                 // abort if initialization failed
                 if (!initialized())
@@ -139,6 +145,38 @@ namespace Eloquent {
                 }
 
                 return this->output->data.f[0];
+            }
+
+            /**
+             * Predict class
+             * @param input
+             * @return
+             */
+            uint8_t predictClass(float *input) {
+                float output[outputSize];
+
+                predict(input, output);
+
+                return probaToClass(output);
+            }
+
+            /**
+             * Get class with highest probability
+             * @param output
+             * @return
+             */
+            uint8_t probaToClass(float *output) {
+                uint8_t classIdx = 0;
+                float maxProba = output[0];
+
+                for (uint8_t i = 1; i < outputSize; i++) {
+                    if (output[i] > maxProba) {
+                        classIdx = i;
+                        maxProba = output[i];
+                    }
+                }
+
+                return classIdx;
             }
 
         protected:
