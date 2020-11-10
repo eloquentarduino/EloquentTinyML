@@ -288,8 +288,11 @@ void PreprocessSoftmaxScaling(double beta, double input_scale,
     input_beta_real_multiplier = (1ll << 31) - 1.0;
   }
 #else   // TFLITE_EMULATE_FLOAT
-  const double input_beta_real_multiplier = std::min(
-      beta * input_scale * (1 << (31 - input_integer_bits)), (1ll << 31) - 1.0);
+// @Eloquent std::min and std::max produces error on some compilers, replace with #defines
+#define min(a, b) ((a) < (b)) ? (a) : (b)
+#define max(a, b) ((a) > (b)) ? (a) : (b)
+
+  const double input_beta_real_multiplier = min(beta * input_scale * (1 << (31 - input_integer_bits)), (1ll << 31) - 1.0);
 #endif  // TFLITE_EMULATE_FLOAT
 
   QuantizeMultiplierGreaterThanOne(input_beta_real_multiplier,
@@ -361,7 +364,7 @@ void FakeQuantizeArray(const float nudged_scale, const float nudged_min,
 
   for (int i = 0; i < size; i++) {
     const float src_val = input_data[i];
-    const float clamped = std::min(nudged_max, std::max(nudged_min, src_val));
+    const float clamped = min(nudged_max, max(nudged_min, src_val));
     const float clamped_shifted = clamped - nudged_min;
     const float dst_val =
         TfLiteRound(clamped_shifted * inv_nudged_scale) * nudged_scale +
