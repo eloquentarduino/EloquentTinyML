@@ -38,7 +38,7 @@ def get_model():
     model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
     model.fit(x_train, y_train, epochs=50, batch_size=16,
               validation_data=(x_validate, y_validate))
-    return Exp
+    return model
 
 
 def test_model(model, x_test, y_test):
