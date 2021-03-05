@@ -100,7 +100,7 @@ namespace Eloquent {
                 if (!initialized())
                     return sqrt(-1);
 
-                memcpy(input, this->input->data.uint8, sizeof(uint8_t) * inputSize);
+                memcpy(this->input->data.uint8,input,sizeof(uint8_t) * inputSize);
 
                 if (interpreter->Invoke() != kTfLiteOk) {
                     reporter->Report("Inference failed");
