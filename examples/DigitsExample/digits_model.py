@@ -38,14 +38,13 @@ def get_model():
     model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
     model.fit(x_train, y_train, epochs=50, batch_size=16,
               validation_data=(x_validate, y_validate))
-    return Exp
+    return model, x_train, y_train
 
 
 def test_model(model, x_test, y_test):
     x_test = (x_test / x_test.max()).reshape((len(x_test), 8, 8, 1))
     y_pred = model.predict(x_test).argmax(axis=1)
     print('ACCURACY', (y_pred == y_test).sum() / len(y_test))
-    exit()
 
 
 if __name__ == '__main__':
