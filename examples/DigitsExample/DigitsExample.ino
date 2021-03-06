@@ -3,7 +3,7 @@
 
 #define NUMBER_OF_INPUTS 64
 #define NUMBER_OF_OUTPUTS 10
-// in future projects you may need to tweek this value: it's a trial and error process
+// in future projects you may need to tweak this value: it's a trial and error process
 #define TENSOR_ARENA_SIZE 8*1024
 
 Eloquent::TinyML::TfLite<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TENSOR_ARENA_SIZE> ml;

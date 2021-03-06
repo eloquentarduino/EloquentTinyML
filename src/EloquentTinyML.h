@@ -11,6 +11,14 @@
 namespace Eloquent {
     namespace TinyML {
 
+        enum TfLiteError {
+            OK,
+            VERSION_MISMATCH,
+            CANNOT_ALLOCATE_TENSORS,
+            NOT_INITIALIZED,
+            INVOKE_ERROR
+        };
+
         /**
          * Eloquent interface to Tensorflow Lite for Microcontrollers
          *
@@ -39,17 +47,15 @@ namespace Eloquent {
                 static tflite::MicroErrorReporter microReporter;
                 static tflite::ops::micro::AllOpsResolver resolver;
 
-                Serial.println("Start");
-
                 reporter = &microReporter;
                 model = tflite::GetModel(modelData);
 
-                Serial.println("GetModel done");
-
                 // assert model version and runtime version match
                 if (model->version() != TFLITE_SCHEMA_VERSION) {
+                    Serial.println("Version mismatch"); delay(1000);
                     failed = true;
-                    Serial.println("Version mismatch");
+                    error = VERSION_MISMATCH;
+
                     reporter->Report(
                             "Model provided is schema version %d not equal "
                             "to supported version %d.",
@@ -58,26 +64,22 @@ namespace Eloquent {
                     return false;
                 }
 
-                Serial.println("Version check done");
-
                 static tflite::MicroInterpreter interpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
 
+                Serial.println("Allocating tensors..."); delay(1000);
                 if (interpreter.AllocateTensors() != kTfLiteOk) {
+                    Serial.println("Cannot allocate tensors"); delay(1000);
                     failed = true;
-                    Serial.println("Allocation failed");
-                    reporter->Report("AllocateTensors() failed");
+                    error = CANNOT_ALLOCATE_TENSORS;
 
                     return false;
                 }
 
-                Serial.println("AllocateTensors done");
-
                 input = interpreter.input(0);
                 output = interpreter.output(0);
+                error = OK;
 
                 this->interpreter = &interpreter;
-
-                Serial.println("Begin done");
 
                 return true;
             }
@@ -100,7 +102,7 @@ namespace Eloquent {
                 if (!initialized())
                     return sqrt(-1);
 
-                memcpy(input, this->input->data.uint8, sizeof(uint8_t) * inputSize);
+                memcpy(this->input->data.uint8, input, sizeof(uint8_t) * inputSize);
 
                 if (interpreter->Invoke() != kTfLiteOk) {
                     reporter->Report("Inference failed");
@@ -123,14 +125,18 @@ namespace Eloquent {
              */
             float predict(float *input, float *output = NULL) {
                 // abort if initialization failed
-                if (!initialized())
+                if (!initialized()) {
+                    error = NOT_INITIALIZED;
+
                     return sqrt(-1);
+                }
 
                 // copy input
                 for (size_t i = 0; i < inputSize; i++)
                     this->input->data.f[i] = input[i];
 
                 if (interpreter->Invoke() != kTfLiteOk) {
+                    error = INVOKE_ERROR;
                     reporter->Report("Inference failed");
 
                     return sqrt(-1);
@@ -138,10 +144,8 @@ namespace Eloquent {
 
                 // copy output
                 if (output != NULL) {
-                    if (output != NULL) {
-                        for (uint16_t i = 0; i < outputSize; i++)
-                            output[i] = this->output->data.f[i];
-                    }
+                    for (uint16_t i = 0; i < outputSize; i++)
+                        output[i] = this->output->data.f[i];
                 }
 
                 return this->output->data.f[0];
@@ -179,8 +183,30 @@ namespace Eloquent {
                 return classIdx;
             }
 
+            /**
+             * Get error message
+             * @return
+             */
+            const char* errorMessage() {
+                switch (error) {
+                    case OK:
+                        return "No error";
+                    case VERSION_MISMATCH:
+                        return "Version mismatch";
+                    case CANNOT_ALLOCATE_TENSORS:
+                        return "Cannot allocate tensors";
+                    case NOT_INITIALIZED:
+                        return "Interpreter has not been initialized";
+                    case INVOKE_ERROR:
+                        return "Interpreter invoke() returned an error";
+                    default:
+                        return "Unknown error";
+                }
+            }
+
         protected:
             bool failed;
+            TfLiteError error;
             uint8_t tensorArena[tensorArenaSize];
             tflite::ErrorReporter *reporter;
             tflite::MicroInterpreter *interpreter;
