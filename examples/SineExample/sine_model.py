@@ -41,5 +41,5 @@ def test_model(model, verbose=False):
 if __name__ == '__main__':
     model = get_model()
     test_model(model, verbose=True)
-    c_code = port(model, pretty_print=True)
+    c_code = port(model, pretty_print=True, optimize= False)
     print(c_code)
