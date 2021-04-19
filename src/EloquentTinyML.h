@@ -52,7 +52,6 @@ namespace Eloquent {
 
                 // assert model version and runtime version match
                 if (model->version() != TFLITE_SCHEMA_VERSION) {
-                    Serial.println("Version mismatch"); delay(1000);
                     failed = true;
                     error = VERSION_MISMATCH;
 
@@ -66,9 +65,7 @@ namespace Eloquent {
 
                 static tflite::MicroInterpreter interpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
 
-                Serial.println("Allocating tensors..."); delay(1000);
                 if (interpreter.AllocateTensors() != kTfLiteOk) {
-                    Serial.println("Cannot allocate tensors"); delay(1000);
                     failed = true;
                     error = CANNOT_ALLOCATE_TENSORS;
 
