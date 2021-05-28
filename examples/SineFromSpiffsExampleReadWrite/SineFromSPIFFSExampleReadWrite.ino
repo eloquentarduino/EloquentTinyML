@@ -58,7 +58,7 @@ void storeModel() {
  * Load model from SPIFFS
  */
 void loadModel() {
-  File file = SPIFFS.open("/sine.bin");
+  File file = SPIFFS.open("/sine.bin", "rb");
   size_t modelSize = file.size();
 
   Serial.print("Found model on filesystem of size ");
