@@ -28,6 +28,7 @@ void setup() {
 
     loadModel();
 
+    // init Tf from loaded model
     if (!ml.begin(loadedModel)) {
         Serial.println("Cannot inialize model");
         Serial.println(ml.errorMessage());
