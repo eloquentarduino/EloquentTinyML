@@ -94,7 +94,10 @@ void http_get() {
 
     model = (uint8_t*) malloc(modelSize);
 
-    http.read(model, modelSize);
+    // copy model from response
+    for (uint16_t i = 0; i < modelSize; i++)
+        model[i] = http.read();
+
     print_model(modelSize);
 }
 
