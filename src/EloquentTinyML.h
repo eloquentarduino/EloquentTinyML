@@ -1,11 +1,23 @@
 #pragma once
 
 #include <Arduino.h>
+
+#ifdef max
+#define REDEFINE_MAX
+#undef max
+#undef min
+#endif
+
 #include <math.h>
 #include "tensorflow/lite/version.h"
 #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
+
+#ifdef REDEFINE_MAX
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+#endif
 
 
 namespace Eloquent {
