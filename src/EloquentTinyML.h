@@ -49,6 +49,11 @@ namespace Eloquent {
                 failed(false) {
             }
 
+            ~TfLite() {
+                delete reporter;
+                delete interpreter;
+            }
+
             /**
              * Inizialize NN
              *
@@ -56,10 +61,9 @@ namespace Eloquent {
              * @return
              */
             bool begin(const unsigned char *modelData) {
-                static tflite::MicroErrorReporter microReporter;
-                static tflite::ops::micro::AllOpsResolver resolver;
+                tflite::ops::micro::AllOpsResolver resolver;
+                reporter = new tflite::MicroErrorReporter();
 
-                reporter = &microReporter;
                 model = tflite::GetModel(modelData);
 
                 // assert model version and runtime version match
@@ -75,20 +79,18 @@ namespace Eloquent {
                     return false;
                 }
 
-                static tflite::MicroInterpreter interpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
+                interpreter = new tflite::MicroInterpreter(model, resolver, tensorArena, tensorArenaSize, reporter);
 
-                if (interpreter.AllocateTensors() != kTfLiteOk) {
+                if (interpreter->AllocateTensors() != kTfLiteOk) {
                     failed = true;
                     error = CANNOT_ALLOCATE_TENSORS;
 
                     return false;
                 }
 
-                input = interpreter.input(0);
-                output = interpreter.output(0);
+                input = interpreter->input(0);
+                output = interpreter->output(0);
                 error = OK;
-
-                this->interpreter = &interpreter;
 
                 return true;
             }
@@ -190,6 +192,14 @@ namespace Eloquent {
                 }
 
                 return classIdx;
+            }
+
+            /**
+             * Get error
+             * @return
+             */
+            TfLiteError getError() {
+                return error;
             }
 
             /**
