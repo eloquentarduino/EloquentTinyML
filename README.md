@@ -14,6 +14,14 @@ Clone this repo in you Arduino libraries folder.
 git clone https://github.com/eloquentarduino/EloquentTinyML.git
 ```
 
+## Export TensorFlow Lite model
+
+To run a model on your microcontroller, you should first have a model.
+
+I suggest you use [`tinymlgen`](https://github.com/eloquentarduino/tinymlgen) to complete this step:
+it will export your TensorFlow Lite model to a C array ready to be loaded
+by this library.
+
 
 ## Use
 
@@ -25,7 +33,7 @@ git clone https://github.com/eloquentarduino/EloquentTinyML.git
 #define NUMBER_OF_OUTPUTS 1
 #define TENSOR_ARENA_SIZE 2*1024
 
-Eloquent::TinyML::TinyML<
+Eloquent::TinyML::TfLite<
     NUMBER_OF_INPUTS,
     NUMBER_OF_OUTPUTS,
     TENSOR_ARENA_SIZE> ml;
@@ -33,7 +41,7 @@ Eloquent::TinyML::TinyML<
 
 void setup() {
     Serial.begin(115200);
-    ml.begin(sine_model_quantized_tflite);
+    ml.begin(sine_model);
 }
 
 void loop() {
@@ -51,3 +59,12 @@ void loop() {
     delay(1000);
 }
 ```
+
+## Compatibility
+
+Latest version of this library (2.4.0) is compatible with Cortex-M and ESP32 chips and is built starting from:
+
+ - [Arduino_TensorFlowLite library version 2.4.0-ALPHA](https://www.tensorflow.org/lite/microcontrollers/overview)
+ - [TensorFlowLite_ESP32 version 0.9.0](https://github.com/tanakamasayuki/Arduino_TensorFlowLite_ESP32)
+
+ESP32 support is stuck at TensorFlow 2.1.1 at the moment.
