@@ -8,11 +8,14 @@ interface to load a model and run inferences.
 
 ## Install
 
-Clone this repo in you Arduino libraries folder.
+EloquentTinyML is available from the Arduino IDE Library Manager or
+you can clone this repo in you Arduino libraries folder.
 
 ```bash
 git clone https://github.com/eloquentarduino/EloquentTinyML.git
 ```
+
+**Be sure you install version 2.4.0 or newer.**
 
 ## Export TensorFlow Lite model
 
@@ -22,42 +25,65 @@ I suggest you use [`tinymlgen`](https://github.com/eloquentarduino/tinymlgen) to
 it will export your TensorFlow Lite model to a C array ready to be loaded
 by this library.
 
+```python
+from tinymlgen import port
+
+
+tf_model = create_tf_network()
+print(port(tf_model))
+```
+
 
 ## Use
 
 ```cpp
 #include <EloquentTinyML.h>
+#include <eloquent_tinyml/tensorflow.h>
+
+// sine_model.h contains the array you exported from Python with xxd or tinymlgen
 #include "sine_model.h"
 
-#define NUMBER_OF_INPUTS 1
-#define NUMBER_OF_OUTPUTS 1
+#define N_INPUTS 1
+#define N_OUTPUTS 1
+// in future projects you may need to tweak this value: it's a trial and error process
 #define TENSOR_ARENA_SIZE 2*1024
 
-Eloquent::TinyML::TfLite<
-    NUMBER_OF_INPUTS,
-    NUMBER_OF_OUTPUTS,
-    TENSOR_ARENA_SIZE> ml;
+Eloquent::TinyML::TensorFlow::TensorFlow<N_INPUTS, N_OUTPUTS, TENSOR_ARENA_SIZE> tf;
 
 
 void setup() {
     Serial.begin(115200);
-    ml.begin(sine_model);
+    delay(4000);
+    tf.begin(sine_model);
+    
+    // check if model loaded fine
+    if (!tf.isOk()) {
+        Serial.print("ERROR: ");
+        Serial.println(tf.getErrorMessage());
+        
+        while (true) delay(1000);
+    }
 }
 
 void loop() {
-    float x = 3.14 * random(100) / 100;
-    float y = sin(x);
-    float input[1] = { x };
-    float predicted = ml.predict(input);
+    for (float i = 0; i < 10; i++) {
+        // pick x from 0 to PI
+        float x = 3.14 * i / 10;
+        float y = sin(x);
+        float input[1] = { x };
+        float predicted = tf.predict(input);
+        
+        Serial.print("sin(");
+        Serial.print(x);
+        Serial.print(") = ");
+        Serial.print(y);
+        Serial.print("\t predicted: ");
+        Serial.println(predicted);
+    }
 
-    Serial.print("sin(");
-    Serial.print(x);
-    Serial.print(") = ");
-    Serial.print(y);
-    Serial.print("\t predicted: ");
-    Serial.println(predicted);
-    delay(1000);
+    delay(10000);
 }
+
 ```
 
 ## Compatibility
