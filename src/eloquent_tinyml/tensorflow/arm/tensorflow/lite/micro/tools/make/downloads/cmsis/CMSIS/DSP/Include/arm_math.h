@@ -196,6 +196,8 @@
 #ifndef _ARM_MATH_H
 #define _ARM_MATH_H
 
+#define __SXTB16_RORn(ARG1, ARG2) __SXTB16(__ROR(ARG1, ARG2))
+
 
 #include "eloquent_tinyml/tensorflow/arm/tensorflow/lite/micro/tools/make/downloads/cmsis/CMSIS/DSP/Include/arm_math_types.h"
 #include "eloquent_tinyml/tensorflow/arm/tensorflow/lite/micro/tools/make/downloads/cmsis/CMSIS/DSP/Include/arm_math_memory.h"

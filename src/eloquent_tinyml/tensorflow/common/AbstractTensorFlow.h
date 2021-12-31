@@ -13,7 +13,7 @@ namespace Eloquent {
             /**
              *
              */
-            enum TfLiteError {
+            enum TensorFlowError {
                 OK,
                 VERSION_MISMATCH,
                 CANNOT_ALLOCATE_TENSORS,
@@ -76,7 +76,7 @@ namespace Eloquent {
                  * Test if the initialization completed fine
                  */
                 bool isOk() {
-                    return error == TfLiteError::OK;
+                    return error == TensorFlowError::OK;
                 }
 
                 /**
@@ -294,7 +294,7 @@ namespace Eloquent {
                  * Get error
                  * @return
                  */
-                TfLiteError getError() {
+                TensorFlowError getError() {
                     return error;
                 }
 
@@ -325,7 +325,7 @@ namespace Eloquent {
                 bool shouldRescaleOutput;
                 float scores[numOutputs];
                 uint8_t tensorArena[tensorArenaSize];
-                TfLiteError error;
+                TensorFlowError error;
                 tflite::MicroErrorReporter errorReporter;
                 tflite::MicroInterpreter *interpreter;
                 TfLiteTensor *input;
@@ -342,7 +342,7 @@ namespace Eloquent {
                  * @return
                  */
                 template<typename T>
-                T abort(TfLiteError errorCode, T rvalue) {
+                T abort(TensorFlowError errorCode, T rvalue) {
                     error = errorCode;
                     failed = true;
 

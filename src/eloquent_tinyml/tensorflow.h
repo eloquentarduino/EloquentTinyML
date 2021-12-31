@@ -16,6 +16,11 @@
 #undef min
 #endif
 
+#ifdef DEFAULT
+#define REDEFINE_DEFAULT
+#undef DEFAULT
+#endif
+
 
 #if defined(ESP32)
     #define ELOQUENT_TINYML_ESP32 1
@@ -49,6 +54,10 @@
 #ifdef REDEFINE_MAX
 #define max(a,b) ((a)>(b)?(a):(b))
 #define min(a,b) ((a)<(b)?(a):(b))
+#endif
+
+#ifdef REDEFINE_DEFAULT
+#define DEFAULT 1
 #endif
 
 #endif //ELOQUENTTINYML_TENSORFLOW_H
