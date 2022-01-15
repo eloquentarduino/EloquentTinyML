@@ -1,4 +1,5 @@
 cmake-build-debug
 .idea
 .DS_Store
+src/.DS_STORE
 publish
