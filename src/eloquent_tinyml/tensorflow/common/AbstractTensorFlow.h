@@ -276,7 +276,7 @@ namespace Eloquent {
                  */
                 template<typename T>
                 T scaleInput(T x) {
-                    return (x - this->output->params.zero_point) * this->output->params.scale;
+                    return (x - this->input->params.zero_point) * this->input->params.scale;
                 }
 
                 /**
@@ -287,7 +287,7 @@ namespace Eloquent {
                  */
                 template<typename T>
                 T scaleOutput(T y) {
-                    return y / this->input->params.zero_point + this->input->params.scale;
+                    return y / this->output->params.zero_point + this->output->params.scale;
                 }
 
                 /**
