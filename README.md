@@ -30,7 +30,7 @@ from tinymlgen import port
 
 
 tf_model = create_tf_network()
-print(port(tf_model))
+print(port(tf_model, optimize=False))
 ```
 
 
