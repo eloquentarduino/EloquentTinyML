@@ -51,5 +51,5 @@ def test_model(model, x_test, y_test):
 if __name__ == '__main__':
     model, x_test, y_test = get_model()
     test_model(model, x_test, y_test)
-    c_code = port(model, variable_name='digits_model', pretty_print=True)
+    c_code = port(model, variable_name='digits_model', pretty_print=True, optimize=False)
     print(c_code)

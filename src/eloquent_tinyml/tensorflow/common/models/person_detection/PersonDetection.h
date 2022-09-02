@@ -209,7 +209,8 @@ namespace Eloquent {
                     if (imageWidth == 96 && imageHeight == 96) {
                         return;
                     }
-                        // only use center region of image
+
+                    // only use center region of image
                     else if (resizeStrategy == PersonDetectionResizeStrategy::PERSON_DETECTION_CROP_TO_CENTER) {
                         const uint16_t xOffset = (imageWidth - 96) / 2;
                         const uint16_t xEnd = xOffset + 96;
@@ -225,7 +226,7 @@ namespace Eloquent {
                             }
                         }
                     }
-                        // use 1 pixel every nth
+                    // use 1 pixel every nth
                     else if (resizeStrategy == PersonDetectionResizeStrategy::PERSON_DETECTION_CROP_UNIFORM) {
                         const float dx = ((float) imageWidth) / 96;
                         const float dy = ((float) imageHeight) / 96;
