@@ -43,8 +43,8 @@
  */
 
 
-// @patch
-//#define __SXTB16_RORn(ARG1, ARG2) __SXTB16(__ROR(ARG1, ARG2))
+// @patch if getting compilation errors about __SXTB16_RORn, comment this line
+#define __SXTB16_RORn(ARG1, ARG2) __SXTB16(__ROR(ARG1, ARG2))
 
 /*
    * s8 matrix multiplication with the right-hand-side matrix transposed
