@@ -3,51 +3,100 @@
 This Arduino library is here to simplify the deployment of Tensorflow Lite
 for Microcontrollers models to Arduino boards using the Arduino IDE.
 
-Including all the required files for you, the library exposes an eloquent
-interface to load a model and run inferences.
+The library exposes an *eloquent* interface to load a model and run inferences.
 
 ## Install
 
-Clone this repo in you Arduino libraries folder.
+Install the latest version (`>=3.0.0`) from the Arduino IDE Library Manager.
 
-```bash
-git clone https://github.com/eloquentarduino/EloquentTinyML.git
-```
+You will also need `tflm_esp32` or `tflm_cortexm`, depending on your board.
 
 
 ## Use
 
 ```cpp
-#include <EloquentTinyML.h>
-#include "sine_model.h"
+/**
+ * Run a TensorFlow model to predict the IRIS dataset
+ * For a complete guide, visit
+ * https://eloquentarduino.com/tensorflow-lite-esp32
+ */
+// replace with your own model
+// include BEFORE <eloquent_tinyml.h>!
+#include "irisModel.h"
+// include the runtime specific for your board
+// either tflm_esp32 or tflm_cortexm
+#include <tflm_esp32.h>
+// now you can include the eloquent tinyml wrapper
+#include <eloquent_tinyml.h>
 
-#define NUMBER_OF_INPUTS 1
-#define NUMBER_OF_OUTPUTS 1
-#define TENSOR_ARENA_SIZE 2*1024
+// this is trial-and-error process
+// when developing a new model, start with a high value
+// (e.g. 10000), then decrease until the model stops
+// working as expected
+#define ARENA_SIZE 2000
 
-Eloquent::TinyML::TinyML<
-    NUMBER_OF_INPUTS,
-    NUMBER_OF_OUTPUTS,
-    TENSOR_ARENA_SIZE> ml;
+Eloquent::TF::Sequential<TF_NUM_OPS, ARENA_SIZE> tf;
 
-
+/**
+ * 
+ */
 void setup() {
     Serial.begin(115200);
-    ml.begin(sine_model_quantized_tflite);
+    delay(3000);
+    Serial.println("__TENSORFLOW IRIS__");
+    
+    // configure input/output
+    // (not mandatory if you generated the .h model
+    // using the everywhereml Python package)
+    tf.setNumInputs(4);
+    tf.setNumOutputs(3);
+    // add required ops
+    // (not mandatory if you generated the .h model
+    // using the everywhereml Python package)
+    tf.resolver.AddFullyConnected();
+    tf.resolver.AddSoftmax();
+    
+    while (!tf.begin(irisModel).isOk())
+        Serial.println(tf.exception.toString());
 }
 
-void loop() {
-    float x = 3.14 * random(100) / 100;
-    float y = sin(x);
-    float input[1] = { x };
-    float predicted = ml.predict(input);
 
-    Serial.print("sin(");
-    Serial.print(x);
-    Serial.print(") = ");
-    Serial.print(y);
-    Serial.print("\t predicted: ");
-    Serial.println(predicted);
+void loop() {
+    // x0, x1, x2 are defined in the irisModel.h file
+    // https://github.com/eloquentarduino/EloquentTinyML/tree/main/examples/IrisExample/irisModel.h
+    
+    // classify sample from class 0
+    if (!tf.predict(x0).isOk()) {
+        Serial.println(tf.exception.toString());
+        return;
+    }
+    
+    Serial.print("expcted class 0, predicted class ");
+    Serial.println(tf.classification);
+    
+    // classify sample from class 1
+    if (!tf.predict(x1).isOk()) {
+        Serial.println(tf.exception.toString());
+        return;
+    }
+    
+    Serial.print("expcted class 1, predicted class ");
+    Serial.println(tf.classification);
+    
+    // classify sample from class 2
+    if (!tf.predict(x2).isOk()) {
+        Serial.println(tf.exception.toString());
+        return;
+    }
+    
+    Serial.print("expcted class 2, predicted class ");
+    Serial.println(tf.classification);
+    
+    // how long does it take to run a single prediction?
+    Serial.print("It takes ");
+    Serial.print(tf.benchmark.microseconds());
+    Serial.println("us for a single prediction");
+    
     delay(1000);
 }
 ```
