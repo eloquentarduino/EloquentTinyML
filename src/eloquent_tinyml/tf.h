@@ -84,10 +84,16 @@ namespace Eloquent {
                     numInputs = TF_NUM_INPUTS;
                 #endif
 
-                #ifdef TF_NUM_INPUTS
+                #ifdef TF_NUM_OUTPUTS
                 if (!numOutputs)
                     numOutputs = TF_NUM_OUTPUTS;
                 #endif
+
+                if (!numInputs)
+                    return exception.set("You must set the number of inputs");
+
+                if (!numOutputs)
+                    return exception.set("You must set the number of outputs");
 
                 #ifdef TF_OP_ADD
                 resolver.AddAdd();
@@ -132,12 +138,6 @@ namespace Eloquent {
                 resolver.AddSoftmax();
                 #endif
 
-                if (!numInputs)
-                    return exception.set("You must set the number of inputs");
-
-                if (!numOutputs)
-                    return exception.set("You must set the number of outputs");
-
                 model = tflite::GetModel(data);
 
                 if (model->version() != TFLITE_SCHEMA_VERSION)
@@ -151,20 +151,45 @@ namespace Eloquent {
                 in = interpreter->input(0);
                 out = interpreter->output(0);
 
+                // allocate outputs
+                outputs = (float*) calloc(numOutputs, sizeof(float));
+
                 return exception.clear();
             }
 
             /**
              *
              */
-            template<typename T>
-            Exception& predict(T *x) {
-                // quantize
-                const float inputScale = in->params.scale;
-                const float inputOffset = in->params.zero_point;
-
+            Exception& predict(float *x) {
                 for (uint16_t i = 0; i < numInputs; i++)
                     in->data.f[i] = x[i];
+
+                benchmark.start();
+
+                if (interpreter->Invoke() != kTfLiteOk)
+                    return exception.set("Invoke() failed");
+
+                for (uint16_t i = 0; i < numOutputs; i++) {
+                    outputs[i] = out->data.f[i];
+                }
+
+                getClassificationResult();
+                benchmark.stop();
+
+                return exception.clear();
+            }
+
+            /**
+             *
+             */
+            Exception& predict(int8_t *x) {
+                // quantization
+                const float inputScale = in->params.scale;
+                const float inputOffset = in->params.zero_point;
+                const float outputScale = out->params.scale;
+                const float outputOffset = out->params.zero_point;
+
+                memcpy(in->data.int8, x, sizeof(int8_t) * numInputs);
 
                 // execute
                 benchmark.start();
@@ -172,16 +197,9 @@ namespace Eloquent {
                 if (interpreter->Invoke() != kTfLiteOk)
                     return exception.set("Invoke() failed");
 
-                // allocate outputs
-                if (outputs == NULL)
-                    outputs = (float*) calloc(numOutputs, sizeof(float));
-
-                // dequantize
-                const float outputScale = out->params.scale;
-                const float outputOffset = out->params.zero_point;
-
-                for (uint16_t i = 0; i < numOutputs; i++)
-                    outputs[i] = out->data.f[i];
+                for (uint16_t i = 0; i < numOutputs; i++) {
+                    outputs[i] = out->data.int8[i];
+                }
 
                 getClassificationResult();
                 benchmark.stop();
