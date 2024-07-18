@@ -161,6 +161,13 @@ namespace Eloquent {
              *
              */
             Exception& predict(float *x) {
+                const float inputScale = in->params.scale;
+                const float inputOffset = in->params.zero_point;
+                const float outputScale = out->params.scale;
+                const float outputOffset = out->params.zero_point;
+
+//                ESP_LOGI("TF", "this->input.offset=%.4f, this->input.scale=%.4f", inputOffset, inputScale);
+
                 for (uint16_t i = 0; i < numInputs; i++)
                     in->data.f[i] = x[i];
 
@@ -170,6 +177,37 @@ namespace Eloquent {
                     return exception.set("Invoke() failed");
 
                 for (uint16_t i = 0; i < numOutputs; i++) {
+                    ESP_LOGI("TF", "this->out.f[%d] = %.4f, this->out.int8[%d] = %d", i, out->data.f[i], i, (int) out->data.int8[i]);
+                    outputs[i] = out->data.f[i];
+                }
+
+                getClassificationResult();
+                benchmark.stop();
+
+                return exception.clear();
+            }
+
+            /**
+             *
+             */
+            Exception& predictInt8(float *x) {
+                const float inputScale = in->params.scale;
+                const float inputOffset = in->params.zero_point;
+                const float outputScale = out->params.scale;
+                const float outputOffset = out->params.zero_point;
+
+                ESP_LOGI("TF", "input.offset=%.4f, input.scale=%.4f", inputOffset, inputScale);
+
+                for (uint16_t i = 0; i < numInputs; i++)
+                    in->data.int8[i] = (x[i] * inputScale) + inputOffset;
+
+                benchmark.start();
+
+                if (interpreter->Invoke() != kTfLiteOk)
+                    return exception.set("Invoke() failed");
+
+                for (uint16_t i = 0; i < numOutputs; i++) {
+                    ESP_LOGI("TF", "out.f[%d] = %.4f, out.int8[%d] = %d", i, out->data.f[i], i, (int) out->data.int8[i]);
                     outputs[i] = out->data.f[i];
                 }
 
